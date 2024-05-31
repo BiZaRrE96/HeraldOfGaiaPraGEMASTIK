@@ -4,12 +4,8 @@ using UnityEngine;
 using System;
 public class TimeTickSystem : MonoBehaviour
 {
-    public class onTickEvent : EventArgs
-    {
-        public int tick;
-    }
-    public static EventHandler<onTickEvent> onTick;  
-    private const float TICK_TIME_MAX = .2f;
+    public static Action TICK;
+    public float TICK_TIME_MAX = .2f;
 
     private int tick;
     private float tickTimer;
@@ -24,12 +20,9 @@ public class TimeTickSystem : MonoBehaviour
         {
             tickTimer -= TICK_TIME_MAX;
             tick++;
-            if (onTick != null)
+            if (TICK != null)
             {
-                onTick(this, new onTickEvent
-                {
-                    tick = tick
-                });
+                TICK();
             }
         }
     }
