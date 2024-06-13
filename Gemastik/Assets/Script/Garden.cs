@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Garden : MonoBehaviour
+public class Garden : MonoBehaviour, Building
 {
     public int storage = 0;
     int time = 0;
@@ -13,12 +13,8 @@ public class Garden : MonoBehaviour
     [SerializeField]
     private int produceItem = 5;
 
-    [SerializeField]
-    Conveyer conveyer;
-    [SerializeField]
-    Container container;
-    [SerializeField]
-    RaycastHit2D hitm;
+    Building building;
+    string hitm;
     void OnEnable()
     {
         transforms = gameObject.GetComponentsInChildren<Transform>();
@@ -26,14 +22,10 @@ public class Garden : MonoBehaviour
         findNext();
     }
 
-    private void OnDisable()
-    {
-        TimeTickSystem.TICK -= Tick;
-    }
 
     private void Tick()
     {
-        if (time >= MAX_TIME)
+        if (time >= MAX_TIME && storage < 20)
         {
             storage++;
             time = 0;
@@ -46,18 +38,13 @@ public class Garden : MonoBehaviour
 
         if (storage != 0 && nextBelt != null && storage > 0 && nextBelt.activeInHierarchy)
         {
-            if (conveyer != null )
+            if (building is Conveyer)
             {
-                if (conveyer.item == 0)
-                {
-                    conveyer.reservecon = this.name;
-                    StartCoroutine(move());
-                }
+                Conveyer temp = (Conveyer)building;
+                temp.reservecon = this.name;
+                building = temp;
             }
-            else if (container != null )
-            {
-                StartCoroutine(store());
-            }
+            StartCoroutine(move());
         }
         else
         {
@@ -69,60 +56,67 @@ public class Garden : MonoBehaviour
     {
         yield return new WaitForEndOfFrame();
 
-        if (conveyer.reservecon == this.name)
+        if (building.checker(this.gameObject, produceItem))
         {
-            conveyer.item = produceItem;
+            building.inputer(produceItem);
             storage--;
         }
     }
     private void findNext()
     {
-        
-        RaycastHit2D hit = Physics2D.Raycast(transforms[1].position, transforms[1].TransformDirection(Vector2.up), 1);
-        Debug.Log(hit);
-        if (hitm != hit)
+
+        RaycastHit2D hit = Physics2D.Raycast(transforms[1].position, transforms[1].TransformDirection(Vector2.up), 1, 64);
+        if (hit.collider)
         {
-            Debug.Log("test 2");
             Debug.DrawRay(transforms[1].position, transforms[1].TransformDirection(new Vector2(0, 1)), Color.red, 5);
-            if (hit.collider)
+            if (hit.transform.gameObject.name == "input")
             {
-                if (hit.transform.gameObject.name == "input")
+                if (hitm != hit.transform.parent.gameObject.name)
                 {
                     GameObject parentObject = hit.transform.parent.gameObject;
-                    conveyer = null;
-                    container = null;
-                    conveyer = parentObject.GetComponent<Conveyer>();
-                    container = parentObject.GetComponent<Container>();
-
-                    if (conveyer != null && conveyer.enabled)
-                    {
-                        nextBelt = parentObject;
-                    }
-                    else if (container != null && container.enabled)
-                    {
-                        nextBelt = parentObject;
-                    }
-
-                }
-                else
-                {
-                    nextBelt = null;
+                    building = parentObject.GetComponent<Building>();
+                    nextBelt = parentObject;
+                    hitm = parentObject.name;
                 }
             }
             else
             {
                 nextBelt = null;
+                hitm = null;
             }
-            hitm = hit;
+        }
+        else
+        {
+            nextBelt = null;
+            hitm = null;
         }
     }
-    private IEnumerator store()
+    public void Stopcorutine()
     {
-        yield return new WaitForEndOfFrame();
-        if (container.item == produceItem || container.item == 0)
-        {
-            container.input(produceItem);
-            storage--;
-        }
+        TimeTickSystem.TICK -= Tick;
+        StopAllCoroutines();
+    }
+    public void enableScript()
+    {
+        this.enabled = true;
+        this.GetComponentInChildren<BoxCollider2D>().enabled = true;
+        findNext();
+    }
+    public void disableScript()
+    {
+        Stopcorutine();
+        this.enabled = false;
+        this.GetComponentInChildren<BoxCollider2D>().enabled = false;
+        storage = 0;
+        gameObject.SetActive(false);
+    }
+
+    public bool checker(GameObject gameObject, int produce)
+    {
+        return false;
+    }
+
+    public void inputer(int Produce)
+    {
     }
 }

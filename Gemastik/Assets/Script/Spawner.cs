@@ -5,9 +5,14 @@ using UnityEngine;
 public class Spawner : MonoBehaviour
 {
     public static GameObject holditem = null;
-    public GameObject conveyer;
-    public static string state;
-    public void Spawnconveyer()
+    private string state;
+    public GameObject test;
+    private void Update()
+    {
+        test = holditem;
+    }
+
+    public void Spawnbuilding(GameObject building)
     {
         Debug.Log(holditem);
         if (holditem == null)
@@ -16,8 +21,8 @@ public class Spawner : MonoBehaviour
             vector3.x = Mathf.RoundToInt(vector3.x);
             vector3.y = Mathf.RoundToInt(vector3.y);
             vector3.z = 0;
-            holditem = Instantiate(conveyer, vector3, Quaternion.Euler(new Vector3(0, 0, Mousehandeler.rotate)));
-            holditem.name = "Conveyer " + Conveyer.index;
+            Object_pooling.instance.getinstance(GetBaseName(building.name), vector3);
+            holditem.name = GetBaseName(building.name) + "_" + Conveyer.index;
             Conveyer.index++;
 
         }
@@ -34,5 +39,20 @@ public class Spawner : MonoBehaviour
             state = "Delete";
             Debug.Log(state);
         }
+    }
+
+    public string getstate()
+    {
+        return state;
+    }
+
+    public string GetBaseName(string objectName)
+    {
+        int index = objectName.LastIndexOf('_');
+        if (index > 0)
+        {
+            return objectName.Substring(0, index);
+        }
+        return objectName;
     }
 }

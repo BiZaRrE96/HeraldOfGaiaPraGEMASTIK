@@ -2,21 +2,33 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Container : MonoBehaviour
+public class Container : MonoBehaviour,Building
 {
-    public int storage = 0;
-    public int item = 0;
-
-    public void input(int item)
+    public static List<int> storage = new List<int>(new int[10]);
+    public bool checker(GameObject gameObject,int produce)
     {
-        if (this.item == 0)
+        return true;
+    }
+    public void inputer(int Produce)
+    {
+        storage[Produce]++;
+        Debug.Log(storage[Produce]);
+    }
+    private void Update()
+    {
+        int i=1;
+        foreach(int nt in storage)
         {
-            this.item = item;
-            storage++;
-        }
-        else
-        {
-            storage++;
+            Debug.Log("storage "+i+" "+nt);
+            i++;
         }
     }
+    public void disableScript()
+    {
+    }
+
+    public void enableScript()
+    {
+    }
+
 }
