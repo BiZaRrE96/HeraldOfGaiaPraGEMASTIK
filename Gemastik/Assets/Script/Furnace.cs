@@ -49,11 +49,11 @@ public class Furnace : MonoBehaviour, Building
         // Move items to the next belt if there is processed storage and the next belt is active
         if (pstorage != 0 && nextBelt != null && pstorage > 0 && nextBelt.activeInHierarchy)
         {
-            if (building is Conveyer)//so that coneyer not fight with each other
+            if (building is Belt)//so that coneyer not fight with each other
             {
-                Conveyer temp = (Conveyer)building;
+                Belt temp = (Belt)building;
                 temp.reservecon = this.name;
-                building = temp;
+                building = (Building)temp;
             }
             StartCoroutine(move());
         }

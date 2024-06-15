@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Object_pooling: MonoBehaviour
+public class Object_pooling : MonoBehaviour
 {
     public static Dictionary<string, Queue<GameObject>> pooldic = new Dictionary<string, Queue<GameObject>>();
     [SerializeField]
@@ -13,8 +13,7 @@ public class Object_pooling: MonoBehaviour
     private void Awake()
     {
         instance = this;
-        int i = 0;
-        foreach(GameObject game in objectprefab)
+        foreach (GameObject game in objectprefab)
         {
             pooldic.Add(game.name, new Queue<GameObject>());
             pools.Add(game.name);
@@ -36,7 +35,7 @@ public class Object_pooling: MonoBehaviour
             }
             else
             {
-                objectinstance = Instantiate(objectprefab[pools.IndexOf(name)],posistion, Quaternion.Euler(new Vector3(0, 0, Mousehandeler.rotate)));
+                objectinstance = Instantiate(objectprefab[pools.IndexOf(name)], posistion, Quaternion.Euler(new Vector3(0, 0, Mousehandeler.rotate)));
             }
 
         }

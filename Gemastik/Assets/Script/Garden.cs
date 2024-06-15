@@ -38,11 +38,11 @@ public class Garden : MonoBehaviour, Building
 
         if (storage != 0 && nextBelt != null && storage > 0 && nextBelt.activeInHierarchy)
         {
-            if (building is Conveyer)
+            if (building is Belt)
             {
-                Conveyer temp = (Conveyer)building;
+                Belt temp = (Belt)building;
                 temp.reservecon = this.name;
-                building = temp;
+                building = (Building)temp;
             }
             StartCoroutine(move());
         }

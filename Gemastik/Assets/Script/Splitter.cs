@@ -1,22 +1,21 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class Conveyer : Belt, Building
+public class Splitter : Belt, Building
 {
-    private Transform[] transforms;
-    private SpriteRenderer sprite;
-    public GameObject nextBelt;
+    public Transform[] transforms;
+    private GameObject[] nextBelt = new GameObject[3];
     public static int index;
-    private Building building;
-    private string hitm;
+    private Building[] building = new Building[3];
+    private string[] hitm = new string[3];
+    private int currentside = 0;
     private Beltsystem beltsystem;
-
     // Called when the script is enabled
     void OnEnable()
     {
-        Debug.Log("Conveyer enabled");
         transforms = gameObject.GetComponentsInChildren<Transform>();
-        sprite = transforms[1].GetComponent<SpriteRenderer>();
+        TimeTickSystem.TICK += Tick;
         findNext();
     }
 
@@ -41,79 +40,81 @@ public class Conveyer : Belt, Building
     private IEnumerator move()
     {
         yield return new WaitForEndOfFrame();
-
-        if (building.checker(this.gameObject, item))
+        if (building[currentside].checker(this.gameObject, item))
         {
-            building.inputer(item);
+            building[currentside].inputer(item);
             item = spareitem;
             spareitem = 0;
         }
+
     }
 
     // Called on each tick to process items
     public override void Tick()
     {
-        if (item != 0 && nextBelt != null && nextBelt.activeInHierarchy)
+        if (item != 0)
         {
-            if (building is Belt)
+            if (nextBelt[currentside] != null && nextBelt[currentside].activeInHierarchy)
             {
-                Belt temp = (Belt)building;
-                temp.reservecon = this.name;
-                building = (Building)temp;
+                if (building[currentside] is Belt)
+                {
+                    Belt temp = (Belt)building[currentside];
+                    temp.reservecon = this.name;
+                    building[currentside] = (Building)temp;
+                }
+                StartCoroutine(move());
+                StartCoroutine(nextside());
             }
-            StartCoroutine(move());
+            else
+            {
+                StartCoroutine(nextside());
+                findNext();
+            }
+
         }
-        else
+    }
+    private IEnumerator nextside()
+    {
+        yield return new WaitForEndOfFrame();
+        currentside++;
+        if (currentside > 2)
         {
-            findNext();
+            currentside = 0;
         }
     }
 
     // Method to find the next belt in the conveyer system
     private void findNext()
     {
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, transforms[1].TransformDirection(Vector2.up), 1, 64);
-        if (hit.collider)
+        for (int i = 0; i < 3; i++)
         {
-            Debug.DrawRay(transforms[1].position, transforms[1].TransformDirection(Vector2.up), Color.red, 5);
-            if (hit.transform.gameObject.name == "input")
+            RaycastHit2D hit = Physics2D.Raycast(transform.position, transforms[i+1].TransformDirection(Vector2.up), 1, 64);
+            if (hit.collider)
             {
-                if (hitm != hit.transform.parent.gameObject.name)
+                Debug.DrawRay(transforms[i+1].position, transforms[i+1].TransformDirection(Vector2.up), Color.red, 5);
+                if (hit.transform.gameObject.name == "input")
                 {
-                    GameObject parentObject = hit.transform.parent.gameObject;
-                    building = parentObject.GetComponent<Building>();
-                    nextBelt = parentObject;
-                    hitm = parentObject.name;
+                    if (hitm[i] != hit.transform.parent.gameObject.name)
+                    {
+                        GameObject parentObject = hit.transform.parent.gameObject;
+                        building[i] = parentObject.GetComponent<Building>();
+                        nextBelt[i] = parentObject;
+                        hitm[i] = parentObject.name;
+                    }
+                }
+                else
+                {
+                    nextBelt[i] = null;
+                    hitm[i] = null;
                 }
             }
             else
             {
-                nextBelt = null;
-                hitm = null;
+                nextBelt[i] = null;
+                hitm[i] = null;
             }
         }
-        else
-        {
-            nextBelt = null;
-            hitm = null;
-        }
-    }
 
-    // Update the sprite color based on item presence
-    private void FixedUpdate()
-    {
-        if(spareitem == 0 && item == 0)
-        {
-            sprite.color = Color.red;
-
-        }else if (spareitem == 0)
-        {
-            sprite.color = Color.yellow;
-        }
-        else
-        {
-            sprite.color = Color.green;
-        }
     }
 
     // Method to stop all coroutines and unsubscribe from the tick event
@@ -136,16 +137,15 @@ public class Conveyer : Belt, Building
     // Disable the script and its colliders
     public void disableScript()
     {
-        transforms = gameObject.GetComponentsInChildren<Transform>();
-        sprite = transforms[1].GetComponent<SpriteRenderer>();
-        sprite.color = Color.red;
         Stopcorutine();
         beltsystem = GameObject.FindGameObjectWithTag("Beltsystem").GetComponent<Beltsystem>();
         beltsystem.removeConveyer(this);
         this.enabled = false;
         item = 0;
         spareitem = 0;
+        currentside = 0;
         GetComponentInChildren<BoxCollider2D>().enabled = false;
         gameObject.SetActive(false);
+
     }
 }
