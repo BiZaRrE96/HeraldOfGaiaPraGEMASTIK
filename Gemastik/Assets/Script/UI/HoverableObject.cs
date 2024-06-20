@@ -5,5 +5,5 @@ using UnityEngine;
 public class HoverableObject : MonoBehaviour
 {
     public string title;
-    public string description;
+    public string body;
 }
