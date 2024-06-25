@@ -8,10 +8,10 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Foreground
   - Water
   - UI
-  - 
+  - UIHover
   - 
   - 
   - 
@@ -43,4 +43,7 @@ TagManager:
     locked: 0
   - name: Conveyer
     uniqueID: 1394642505
+    locked: 0
+  - name: Foreground
+    uniqueID: 2514243413
     locked: 0

@@ -44,6 +44,7 @@ public class HoverDisplay : MonoBehaviour
     {
         SetTitle(title);
         SetBody(body);
+        this.gameObject.transform.SetAsLastSibling();
     }
 
     public void Display(HoverableObject hoverableObject) {

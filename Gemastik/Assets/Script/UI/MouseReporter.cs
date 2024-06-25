@@ -13,9 +13,7 @@ using UnityEngine.UI;
 public class MouseReporter : MonoBehaviour, IPointerMoveHandler, IPointerEnterHandler, IPointerExitHandler
 {
     private Vector3 _MousePosition;
-    private float generalHoverTime = 1.0f;
-    private int evoCounter = 0;
-    private int evoCounter2 = 0;
+    private float generalHoverTime = 0.2f;
     [SerializeField] private GameObject descriptionHoverBox;
     [SerializeField] private HoverableObject hoveredObject;
     [SerializeField] private bool hovering;
@@ -39,6 +37,12 @@ public class MouseReporter : MonoBehaviour, IPointerMoveHandler, IPointerEnterHa
     /// Hides DescriptionHoverBox
     /// </summary>
     private void OnHoverEnd() {
+        if (!lastHoverCoroutine.IsUnityNull())
+        {
+            StopCoroutine(lastHoverCoroutine);
+            lastHoverCoroutine = null;
+        }
+        hoveredObject = null;
         descriptionHoverBox.SetActive(false);
         hovering = false;
     }
@@ -77,6 +81,7 @@ public class MouseReporter : MonoBehaviour, IPointerMoveHandler, IPointerEnterHa
 
         if (tempHO.IsUnityNull())
         {
+            //Debug.Log("Null/No hoverables");
             if (lastHoverCoroutine != null)
             {
                 StopCoroutine(lastHoverCoroutine);
@@ -101,6 +106,7 @@ public class MouseReporter : MonoBehaviour, IPointerMoveHandler, IPointerEnterHa
     /// </summary>
     private IEnumerator StartHovering()
     {
+        Debug.Log($"Begin hover {hoveredObject.name}");
         float totalHoverTime = 0.0f;
         while (totalHoverTime<generalHoverTime)
         {
@@ -112,13 +118,13 @@ public class MouseReporter : MonoBehaviour, IPointerMoveHandler, IPointerEnterHa
 
     void IPointerEnterHandler.OnPointerEnter(UnityEngine.EventSystems.PointerEventData eventData)
     {
+        //Debug.Log($"Enter {eventData.pointerEnter}");
         hovering = true;
+        HoverRoutine(eventData);
     }
 
     void IPointerExitHandler.OnPointerExit(UnityEngine.EventSystems.PointerEventData eventData)
     {
-        StopCoroutine(StartHovering());
         OnHoverEnd();
     }
-
 }
