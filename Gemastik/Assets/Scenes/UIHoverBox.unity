@@ -398,7 +398,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 10, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &252102631
 MonoBehaviour:
@@ -1449,6 +1449,7 @@ MonoBehaviour:
   item:
     TestValue: 19
   clocke: 0
+  legalitems: []
   MenuPrefab: {fileID: 7101535082074268062, guid: 5f7f9706c319a6b49b651c6155b121d4, type: 3}
 --- !u!1 &814698352
 GameObject:
@@ -5100,7 +5101,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0.25}
   m_AnchorMax: {x: 1, y: 0.75}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -10, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1915864952
 GameObject:

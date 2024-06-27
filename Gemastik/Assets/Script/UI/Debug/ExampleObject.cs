@@ -8,7 +8,7 @@ public class ExampleObject : MonoBehaviour, IMenuableObject
 {
     [SerializeField] private TestItemType item;
     [SerializeField] private float clocke;
-    [SerializeField] public List<object> legalitems = new List<object>();
+    [SerializeField] public List<TestItemType> legalitems;
     [SerializeField] private GameObject MenuPrefab;
     void Start()
     {
@@ -40,11 +40,11 @@ public class ExampleObject : MonoBehaviour, IMenuableObject
     }
     List<MenuItem> IMenuableObject.OnUpdate()
     {
-        //ceritanya cuman bisa salah satu dari ini
+        //return value
         List<MenuItem> retval = new List<MenuItem>();
 
         //have to cast to list of object cus lazy
-        var ss = new SingleSelectable()
+        var ss = new SingleSelectable<TestItemType>()
         {
             name = "Things",
             selectableID = "ITEM",

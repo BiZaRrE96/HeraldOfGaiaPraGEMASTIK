@@ -15,17 +15,33 @@ public class ObjectMenu : MonoBehaviour
 }
 
 
-public class MenuItem 
+public class MenuItem
 {
     public string name;
     public string title;
 };
 
-public class SingleSelectable : MenuItem
+public abstract class SingleSelectable : MenuItem
 {
     public string selectableID;
-    public object current_value;
-    public List<object> selectableItems;
+    public abstract object get_current_value { get; }
+    public abstract List<object> get_selectable_items { get; }
+}
+
+public class SingleSelectable<T> : SingleSelectable
+{
+    public T current_value;
+    public List<T> selectableItems;
+
+    public override object get_current_value
+    {
+        get { return current_value; }
+    }
+
+    public override List<object> get_selectable_items
+    {
+        get { return selectableItems.ConvertAll(item => (object)item); }
+    }
 }
 
 public interface DrawableItem

@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEditor;
 using TMPro;
+using UnityEngine.Assertions;
 
 public class UIDispatcher : MonoBehaviour, ICancelHandler
 {
@@ -128,10 +129,10 @@ public class UIDispatcher : MonoBehaviour, ICancelHandler
                 Title.text = item.title;
             }
 
-            if (item.GetType().Equals(typeof(SingleSelectable)))
+            if (item is SingleSelectable)
             {
                 //draw item display
-                ItemDrawer(host.transform.Find(item.name).gameObject, ((SingleSelectable) item).current_value);
+                ItemDrawer(host.transform.Find(item.name).gameObject, ((SingleSelectable) item).get_current_value);
 
                 //button
                 if (setup)
@@ -141,7 +142,7 @@ public class UIDispatcher : MonoBehaviour, ICancelHandler
                         void DelegateSpawner()
                         {
                             Debug.Log("SELECT BUTTON TEST");
-                            OnSelectablePick(IMO, (SingleSelectable)item);
+                            OnSelectablePick(IMO, (SingleSelectable) item);
                         }
                         button.gameObject.GetComponent<Button>().onClick.AddListener(DelegateSpawner);
                     }
@@ -167,7 +168,8 @@ public class UIDispatcher : MonoBehaviour, ICancelHandler
         AccessPane ap = pane.AddComponent<AccessPane>();
         ap.ID = ss.selectableID;
         Transform catalog = pane.transform.Find("Viewport").Find("Content").Find("Catalog");
-        foreach (object item in ss.selectableItems) {
+        Assert.IsNotNull(ss.get_selectable_items);
+        foreach (object item in ss.get_selectable_items) {
             GameObject go = Instantiate(SelectableItemPrefab);
             go.GetComponent<SelectableItem>().item = item;
             ItemDrawer(go, item);
@@ -199,12 +201,12 @@ public class UIDispatcher : MonoBehaviour, ICancelHandler
             return;
         }
 
-        title.GetComponent<TMPro.TextMeshProUGUI>().text = item.ToString();
+        
 
         if (item.IsUnityNull())
         {
             image.SetActive(false);
-            title.SetActive(false);
+            title.GetComponent<TMPro.TextMeshProUGUI>().text = "None";
             return;
         }
         else if (item is DrawableItem)
@@ -222,6 +224,7 @@ public class UIDispatcher : MonoBehaviour, ICancelHandler
         else
         {
             image.SetActive(false);
+            title.GetComponent<TMPro.TextMeshProUGUI>().text = item.ToString();
         }
 
         
