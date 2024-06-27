@@ -47,6 +47,7 @@ public class ExampleObject : MonoBehaviour, IMenuableObject
         var ss = new SingleSelectable<TestItemType>()
         {
             name = "Things",
+            title = "SelectableItem",
             selectableID = "ITEM",
             selectableItems = legalitems,
             current_value = item
@@ -58,8 +59,15 @@ public class ExampleObject : MonoBehaviour, IMenuableObject
             title = string.Format("{0:0.00}",clocke),
         };
 
+        var percenter = new ProgressBar()
+        {
+            name = "Clocke progress",
+            value = (clocke % 100)/100
+        };
+
         retval.Add(ss);
         retval.Add(mm);
+        retval.Add(percenter);
         return retval;
     }
 

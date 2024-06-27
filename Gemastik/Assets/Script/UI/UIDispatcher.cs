@@ -44,7 +44,7 @@ public class UIDispatcher : MonoBehaviour, ICancelHandler
     public void OpenMenu(GameObject go, PointerEventData eventData)
     {
         IMenuableObject temp;
-        if (go.TryGetComponent<IMenuableObject>(out temp)){
+        if (go.TryGetComponent<IMenuableObject>(out temp)) {
             if (!temp.IsUnityNull()) {
                 foreach (var pane in stack)
                 {
@@ -86,7 +86,7 @@ public class UIDispatcher : MonoBehaviour, ICancelHandler
                 {
                     GameObject go = apObject;
                     int i = 0;
-                    
+
 
                     if (debugCounter == debugCounterTarget)
                     {
@@ -119,50 +119,115 @@ public class UIDispatcher : MonoBehaviour, ICancelHandler
     //receives a MenuItem object, draws it in given gameObject;
     void DrawGivenMenuItem(IMenuableObject IMO, MenuItem item, GameObject host, bool setup)
     {
-        string TargetName = item.name;
-        Transform targetChild = host.transform.Find(item.name);
-        if (!targetChild.IsUnityNull())
+        if (item.title != null)
         {
-            Text Title;
-            if (targetChild.gameObject.TryGetComponent<Text>(out Title))
+            string TargetName = item.name;
+            Transform targetChild = host.transform.Find(item.titleName);
+            if (targetChild.IsUnityNull())
             {
-                Title.text = item.title;
+                targetChild = host.transform.Find(item.name);
             }
 
-            if (item is SingleSelectable)
+            if (!targetChild.IsUnityNull())
             {
-                //draw item display
-                ItemDrawer(host.transform.Find(item.name).gameObject, ((SingleSelectable) item).get_current_value);
-
-                //button
-                if (setup)
+                TMP_Text Title;
+                if (!targetChild.gameObject.TryGetComponent<TMP_Text>(out Title))
                 {
-                    Transform button = host.transform.Find(item.name + "[Button]");
-                    if (!button.IsUnityNull()) {
-                        void DelegateSpawner()
-                        {
-                            Debug.Log("SELECT BUTTON TEST");
-                            OnSelectablePick(IMO, (SingleSelectable) item);
-                        }
-                        button.gameObject.GetComponent<Button>().onClick.AddListener(DelegateSpawner);
-                    }
-                    else
+                    targetChild = targetChild.transform.Find(item.name + "[Title]");
+                    if (!targetChild.IsUnityNull())
                     {
-                        Debug.LogWarning($"\"{item.name + "[Button]"}\" not found!");
+                        targetChild.TryGetComponent<TMP_Text>(out Title);
                     }
+                    else if (setup)
+                    {
+                        Debug.LogWarning($"\"{item.name}\" or \"{item.titleName}\" Not found");
+                    }
+
+                }
+
+
+                if (!Title.IsUnityNull())
+                {
+                    Title.text = item.title;
+                }
+                else if (setup)
+                {
+                    Debug.LogWarning($"\"{item.name}\" Has no (Immediate) Text component!");
                 }
 
             }
+            else if (setup)
+            {
+                Debug.LogWarning($"No such thing as {item.name}!");
+            }
         }
-        else if (setup)
+
+        if (item is SingleSelectable)
         {
-            Debug.LogWarning($"No such thing as {item.name}!");
+            //draw item display
+            ItemDrawer(host.transform.Find(item.name).gameObject, ((SingleSelectable)item).get_current_value);
+
+            //button
+            if (setup)
+            {
+                Transform button = host.transform.Find(((SingleSelectable)item).buttonName);
+                if (!button.IsUnityNull()) {
+                    void DelegateSpawner()
+                    {
+                        Debug.Log("SELECT BUTTON TEST");
+                        OnSelectablePick(IMO, (SingleSelectable)item);
+                    }
+                    Button b;
+                    if (button.gameObject.TryGetComponent<Button>(out b))
+                    {
+                        b.onClick.AddListener(DelegateSpawner);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"{((SingleSelectable)item).buttonName} missing button Component!");
+                    }
+
+                }
+                else
+                {
+                    Debug.LogWarning($"\"{((SingleSelectable)item).buttonName}\" not found!");
+                }
+            }
+
+        }
+
+        if (item is ProgressBar)
+        {
+            Transform progressbar = host.transform.Find(((ProgressBar)item).progressBarName);
+            Slider slider;
+            if (!progressbar.IsUnityNull())
+            {
+                if (progressbar.gameObject.TryGetComponent<Slider>(out slider))
+                {
+                    slider.value = ((ProgressBar)item).value;
+                }
+                else if (setup)
+                {
+                    Debug.LogWarning($"{((ProgressBar)item).progressBarName} does not have slider component!");
+                }
+            }
+            else if (setup)
+            {
+                Debug.LogWarning($"\"{((ProgressBar)item).progressBarName}\" not found!");
+            }
+            //skip this
         }
     }
     
     void OnSelectablePick(IMenuableObject IMO, SingleSelectable ss)
     {
         //check if pane exists yet
+        foreach (AccessPane acp in stack)
+        {
+            if (acp.ID == ss.selectableID) {
+                return;
+            }
+        }
 
         GameObject pane = Instantiate(SelectionPanePrefab,this.gameObject.transform);
         AccessPane ap = pane.AddComponent<AccessPane>();

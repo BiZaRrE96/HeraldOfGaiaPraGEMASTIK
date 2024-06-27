@@ -19,11 +19,17 @@ public class MenuItem
 {
     public string name;
     public string title;
+    public string titleName { get { return name + "[Title]"; } } //use if you want to put title in child of object with name
 };
 
+/// <summary>
+/// I love generic (lies)
+/// Note : must put object of name "Display" (refer to prefab)
+/// </summary>
 public abstract class SingleSelectable : MenuItem
 {
     public string selectableID;
+    public string buttonName { get { return this.name + "[Button]"; } }
     public abstract object get_current_value { get; }
     public abstract List<object> get_selectable_items { get; }
 }
@@ -42,6 +48,12 @@ public class SingleSelectable<T> : SingleSelectable
     {
         get { return selectableItems.ConvertAll(item => (object)item); }
     }
+}
+
+public class ProgressBar : MenuItem
+{
+    public string progressBarName { get { return this.name + "[Progress Bar]";} }
+    public float value;
 }
 
 public interface DrawableItem
