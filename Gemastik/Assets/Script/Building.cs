@@ -6,7 +6,7 @@ using UnityEngine;
 public interface Building
 {
     bool checker(GameObject gameObject,int produce);
-    void inputer(int Produce);
+    void inputer(int Produce,GameObject resource);
     void enableScript();
     void disableScript();
 }

@@ -10,6 +10,8 @@ public class Object_pooling : MonoBehaviour
     [SerializeField]
     private List<string> pools;
     public static Object_pooling instance;
+    [SerializeField]
+    private Transform parent;
     private void Awake()
     {
         instance = this;
@@ -35,7 +37,7 @@ public class Object_pooling : MonoBehaviour
             }
             else
             {
-                objectinstance = Instantiate(objectprefab[pools.IndexOf(name)], posistion, Quaternion.Euler(new Vector3(0, 0, Mousehandeler.rotate)));
+                objectinstance = Instantiate(objectprefab[pools.IndexOf(name)], posistion, Quaternion.Euler(new Vector3(0, 0, Mousehandeler.rotate)),parent);
             }
 
         }
@@ -43,6 +45,17 @@ public class Object_pooling : MonoBehaviour
         {
             Debug.LogError("name does not exist in pool");
         }
+        if (objectinstance.transform.localScale.x == 2)
+        {
+            objectinstance.transform.rotation= Quaternion.Euler(0, 0, 0);
+            objectinstance.transform.GetChild(0).rotation= Quaternion.Euler(0, 0, Mousehandeler.rotate);
+        }
+        else
+        {
+            objectinstance.transform.rotation = Quaternion.Euler(new Vector3(0, 0, Mousehandeler.rotate));
+        }
+        Debug.Log(objectinstance.transform.rotation.z);
+        Debug.Log(objectinstance.transform.GetChild(0).rotation.z);
         Spawner.holditem = objectinstance;
     }
 

@@ -6,10 +6,9 @@ public class Splitter : Belt, Building
 {
     public Transform[] transforms;
     private GameObject[] nextBelt = new GameObject[3];
-    public static int index;
-    private Building[] building = new Building[3];
+    public Building[] building = new Building[3];
     private string[] hitm = new string[3];
-    private int currentside = 0;
+    public int currentside = 0;
     private Beltsystem beltsystem;
     // Called when the script is enabled
     void OnEnable()
@@ -22,29 +21,39 @@ public class Splitter : Belt, Building
     // Checker method to verify if this conveyer can accept the item
     public bool checker(GameObject gameObject, int produce)
     {
-        return reservecon == gameObject.name && spareitem == 0;
+        return reservecon == gameObject.name && item == 0;
     }
 
     // Method to input an item into the conveyer
-    public void inputer(int Produce)
+    public void inputer(int Produce, GameObject resource)
     {
-        spareitem = Produce;
-        if (item == 0)
+        item = Produce;
+        item_object = resource;
+        StartCoroutine(moving(resource, this.gameObject));
+    }
+
+    private IEnumerator moving(GameObject origin, GameObject target)
+    {
+        while (origin.transform.position != target.transform.position)
         {
-            item = spareitem;
-            spareitem = 0;
+            origin.transform.position = Vector2.MoveTowards(origin.transform.position, target.transform.position, 3 * Time.deltaTime);
+            yield return null;
         }
+        Debug.Log("moving");
+
     }
 
     // Coroutine to move the item to the next building
     private IEnumerator move()
     {
         yield return new WaitForEndOfFrame();
+        Debug.Log(building[currentside]);
+        Debug.Log(item);
         if (building[currentside].checker(this.gameObject, item))
         {
-            building[currentside].inputer(item);
-            item = spareitem;
-            spareitem = 0;
+            building[currentside].inputer(item,item_object);
+            item = 0;
+            item_object = null;
         }
 
     }
@@ -56,14 +65,19 @@ public class Splitter : Belt, Building
         {
             if (nextBelt[currentside] != null && nextBelt[currentside].activeInHierarchy)
             {
-                if (building[currentside] is Belt)
+                if (item_object.transform.position == this.transform.position)
                 {
-                    Belt temp = (Belt)building[currentside];
-                    temp.reservecon = this.name;
-                    building[currentside] = (Building)temp;
+
+                    if (building[currentside] is Belt)
+                    {
+                        Belt temp = (Belt)building[currentside];
+                        temp.reservecon = this.name;
+                        building[currentside] = (Building)temp;
+                    }
+                    StartCoroutine(move());
+                    StartCoroutine(nextside());
+
                 }
-                StartCoroutine(move());
-                StartCoroutine(nextside());
             }
             else
             {
@@ -75,7 +89,7 @@ public class Splitter : Belt, Building
     }
     private IEnumerator nextside()
     {
-        yield return new WaitForEndOfFrame();
+        yield return null;
         currentside++;
         if (currentside > 2)
         {
@@ -138,11 +152,15 @@ public class Splitter : Belt, Building
     public void disableScript()
     {
         Stopcorutine();
+        if (item_object)
+        {
+            item_object.SetActive(false);
+            item_object = null;
+        }
         beltsystem = GameObject.FindGameObjectWithTag("Beltsystem").GetComponent<Beltsystem>();
         beltsystem.removeConveyer(this);
         this.enabled = false;
         item = 0;
-        spareitem = 0;
         currentside = 0;
         GetComponentInChildren<BoxCollider2D>().enabled = false;
         gameObject.SetActive(false);

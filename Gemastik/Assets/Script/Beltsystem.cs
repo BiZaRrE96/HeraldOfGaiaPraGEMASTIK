@@ -23,7 +23,6 @@ public class Beltsystem : MonoBehaviour
             if (belt)
             {
                 belt.Tick();
-                Debug.Log(belt.gameObject.name + " " + j);
                 j++;
             }
         }

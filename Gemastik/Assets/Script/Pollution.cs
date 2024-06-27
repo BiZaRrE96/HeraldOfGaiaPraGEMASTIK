@@ -1,18 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI;
 public class Pollution : MonoBehaviour
 {
-    private int pollutionAmount = 0;
-
-    public void increase(int amount)
+    private static int pollutionAmount = 0;
+    [SerializeField]
+    private Slider slider;
+    public static void increase(int amount)
     {
         pollutionAmount += amount;
     }
-    public void decrese(int amount)
+    public static void decrese(int amount)
     {
         pollutionAmount -= amount;
     }
-
+    private void Update()
+    {
+        slider.value = pollutionAmount;
+    }
 }

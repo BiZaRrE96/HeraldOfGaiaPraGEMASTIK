@@ -15,6 +15,10 @@ public class Mousehandeler : MonoBehaviour
     [SerializeField]
     private Canvas canvas;
 
+    [SerializeField]
+    private Container container;
+    [SerializeField]
+    private Energy energy;
     // Reference to the Event System
     private EventSystem eventSystem;
 
@@ -43,30 +47,42 @@ public class Mousehandeler : MonoBehaviour
             vector3.y = Mathf.RoundToInt(vector3.y);
             vector3.z = 0;
             ts.position = vector3;
-            ts.rotation = Quaternion.Euler(new Vector3(0, 0, rotate));
             if (Input.GetMouseButton(0))
             {
-                if (checkPlace(vector3)&&!IsPointerOverUIElement())
+                if (checkPlace(vector3) && !IsPointerOverUIElement())
                 {
-                    Spawner.holditem.GetComponent<Building>().enableScript();
-                    GameObject temp = Spawner.holditem;
-                    Spawner.holditem = null;
-                    spawner.Spawnbuilding(temp);
-                    ts = Spawner.holditem.GetComponent<Transform>();
+                    if (energy.checkenergy(Spawner.holditem.GetComponent<Buildcost>().energy))
+                    {
+                        if (container.checkResource(Spawner.holditem.GetComponent<Buildcost>().cost))
+                        {
+                            energy.decrese(Spawner.holditem.GetComponent<Buildcost>().energy);
+                            Spawner.holditem.GetComponent<Building>().enableScript();
+                            GameObject temp = Spawner.holditem;
+                            Spawner.holditem = null;
+                            spawner.Spawnbuilding(temp);
+                            ts = Spawner.holditem.GetComponent<Transform>();
+                        }
+                    }
                 }
             }
             if (Input.GetMouseButtonDown(1))
             {
-                Debug.Log(Spawner.holditem);
-                Debug.Log(Spawner.holditem.name);
                 Object_pooling.instance.putinstance(GetBaseName(Spawner.holditem.name), Spawner.holditem);
                 ts = null;
                 Spawner.holditem = null;
             }
-            if (Input.GetKeyDown(KeyCode.R)&&!Input.GetKey(KeyCode.LeftShift))
+            if (Input.GetKeyDown(KeyCode.R) && !Input.GetKey(KeyCode.LeftShift))
             {
-                Spawner.holditem.transform.Rotate(new Vector3(0, 0, 90));
-                rotate = Spawner.holditem.transform.rotation.eulerAngles.z;
+                if(Spawner.holditem.transform.localScale.x == 2)
+                {
+                    Spawner.holditem.transform.GetChild(0).transform.Rotate(new Vector3(0, 0, 90));
+                    rotate = Spawner.holditem.transform.GetChild(0).rotation.eulerAngles.z;
+                }
+                else
+                {
+                    Spawner.holditem.transform.Rotate(new Vector3(0, 0, 90));
+                    rotate = Spawner.holditem.transform.rotation.eulerAngles.z;
+                }
             }
 
         }
@@ -80,6 +96,8 @@ public class Mousehandeler : MonoBehaviour
                 if (hit != null)
                 {
                     Debug.Log(hit.transform.parent.gameObject.name);
+                    energy.increase(hit.transform.parent.GetComponent<Buildcost>().energy);
+                    container.refundResource(hit.transform.parent.GetComponent<Buildcost>().cost);
                     Object_pooling.instance.putinstance(GetBaseName(hit.transform.parent.gameObject.name), hit.transform.parent.gameObject);
 
                 }
@@ -88,18 +106,55 @@ public class Mousehandeler : MonoBehaviour
     }
     public bool checkPlace(Vector3 targetvector)
     {
-        Collider2D hit;
+        Collider2D hit=null;
+        Collider2D[] hits=null;
         if (Spawner.holditem.transform.localScale.x == 1)
         {
             hit = Physics2D.OverlapPoint(targetvector);
         }
-        else
+        else if (Spawner.holditem.transform.localScale.x == 3)
         {
             hit = Physics2D.OverlapArea(new Vector2(targetvector.x - 1, targetvector.y - 1), new Vector2(targetvector.x + 1, targetvector.y + 1));
         }
-
-        if (hit == null)
+        else if(Spawner.holditem.transform.localScale.x == 2)
         {
+            hits = Physics2D.OverlapAreaAll(new Vector2(targetvector.x + 0.25f, targetvector.y - 0.25f), new Vector2(targetvector.x + 1.25f, targetvector.y - 1.25f));
+        }
+
+        if (hits != null)
+        {
+            if (hits.Length > 0)
+            {
+                bool ore = true;
+                foreach(Collider2D collider in hits)
+                {
+                    if (ore)
+                    {
+                        if (collider.gameObject.name != "Iron")
+                        {
+                            ore = false;
+                        }
+                    }
+                }
+                if (ore)
+                {
+                    Spawner.holditem.GetComponent<Drill>().amountmade = hits.Length;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+
+            }
+            else
+            {
+                return false;
+            }
+        }
+        if (hit == null && Spawner.holditem.transform.localScale.x != 2)
+        {
+            Debug.Log("this");
             return true;
         }
         else
@@ -108,7 +163,6 @@ public class Mousehandeler : MonoBehaviour
             return false;
         }
     }
-
     public string GetBaseName(string objectName)
     {
         int index = objectName.LastIndexOf('_');

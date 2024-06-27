@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Furnace : MonoBehaviour, Building
+public class Furnace : Buildcost, Building
 {
     // Public variables for testing purpose
     public int storage = 0; // Current storage count of items
@@ -14,7 +14,6 @@ public class Furnace : MonoBehaviour, Building
     private int produceItem = 7; // Type of item produced
     [SerializeField]
     private int needItem = 5; // Type of item needed
-
     // Private variables
     private int time = 0; // Time counter for processing
     private Transform[] transforms; // Array of transforms of the GameObject and its children
@@ -36,6 +35,7 @@ public class Furnace : MonoBehaviour, Building
         // Process items if the time exceeds MAX_TIME and storage is sufficient and pstorage no more than 10
         if (time >= MAX_TIME && storage > 2 && pstorage < 10)
         {
+            Pollution.increase(pollution);
             pstorage++;
             storage -= 2;
             time = 0;
@@ -71,7 +71,7 @@ public class Furnace : MonoBehaviour, Building
         // If the next building can accept the item, move it
         if (building.checker(this.gameObject, produceItem))
         {
-            building.inputer(produceItem);
+            building.inputer(produceItem,null);
             pstorage--;
         }
     }
@@ -154,7 +154,7 @@ public class Furnace : MonoBehaviour, Building
         }
     }
 
-    public void inputer(int Produce)
+    public void inputer(int Produce,GameObject resource)
     {
         // Increase storage count when an item is input
         storage++;

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Energy : MonoBehaviour
 {
+    [SerializeField]
     private int energyAmount = 0;
 
     public void increase(int amount)
@@ -16,7 +17,7 @@ public class Energy : MonoBehaviour
     }
     public bool checkenergy(int amount)
     {
-        if (amount >= energyAmount)
+        if (amount <= energyAmount)
         {
             return true;
         }

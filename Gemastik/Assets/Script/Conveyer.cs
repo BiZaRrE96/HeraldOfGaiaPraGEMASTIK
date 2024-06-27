@@ -1,40 +1,34 @@
 using System.Collections;
 using UnityEngine;
-
-public class Conveyer : Belt, Building
+using UnityEngine.EventSystems;
+public class Conveyer : Belt, Building,IPointerClickHandler
 {
     private Transform[] transforms;
-    private SpriteRenderer sprite;
     public GameObject nextBelt;
     public static int index;
     private Building building;
     private string hitm;
     private Beltsystem beltsystem;
-
     // Called when the script is enabled
     void OnEnable()
     {
         Debug.Log("Conveyer enabled");
         transforms = gameObject.GetComponentsInChildren<Transform>();
-        sprite = transforms[1].GetComponent<SpriteRenderer>();
         findNext();
     }
 
     // Checker method to verify if this conveyer can accept the item
     public bool checker(GameObject gameObject, int produce)
     {
-        return reservecon == gameObject.name && spareitem == 0;
+        return reservecon == gameObject.name && item == 0;
     }
 
     // Method to input an item into the conveyer
-    public void inputer(int Produce)
+    public void inputer(int Produce,GameObject resource)
     {
-        spareitem = Produce;
-        if (item == 0)
-        {
-            item = spareitem;
-            spareitem = 0;
-        }
+        item = Produce;
+        item_object = resource;
+        StartCoroutine(moving(resource, this.gameObject));
     }
 
     // Coroutine to move the item to the next building
@@ -44,28 +38,47 @@ public class Conveyer : Belt, Building
 
         if (building.checker(this.gameObject, item))
         {
-            building.inputer(item);
-            item = spareitem;
-            spareitem = 0;
+            building.inputer(item,item_object);
+            item = 0;
+            item_object = null;
         }
+    }
+
+    private IEnumerator moving(GameObject origin,GameObject target)
+    {
+        while (origin.transform.position!=target.transform.position)
+        {
+            origin.transform.position = Vector2.MoveTowards(origin.transform.position, target.transform.position, 3 * Time.deltaTime);
+            yield return null;
+        }
+        Debug.Log("moving");
+
     }
 
     // Called on each tick to process items
     public override void Tick()
     {
-        if (item != 0 && nextBelt != null && nextBelt.activeInHierarchy)
+        if (item_object)
         {
-            if (building is Belt)
+            if (item != 0 && nextBelt != null && nextBelt.activeInHierarchy)
             {
-                Belt temp = (Belt)building;
-                temp.reservecon = this.name;
-                building = (Building)temp;
+                if(item_object.transform.position==this.transform.position)
+                {
+                    if (building is Belt)
+                    {
+                        Belt temp = (Belt)building;
+                        temp.reservecon = this.name;
+                        building = (Building)temp;
+                    }
+                    StartCoroutine(move());
+
+                }
             }
-            StartCoroutine(move());
-        }
-        else
-        {
-            findNext();
+            else
+            {
+                findNext();
+            }
+
         }
     }
 
@@ -99,23 +112,6 @@ public class Conveyer : Belt, Building
         }
     }
 
-    // Update the sprite color based on item presence
-    private void FixedUpdate()
-    {
-        if(spareitem == 0 && item == 0)
-        {
-            sprite.color = Color.red;
-
-        }else if (spareitem == 0)
-        {
-            sprite.color = Color.yellow;
-        }
-        else
-        {
-            sprite.color = Color.green;
-        }
-    }
-
     // Method to stop all coroutines and unsubscribe from the tick event
     public void Stopcorutine()
     {
@@ -137,15 +133,22 @@ public class Conveyer : Belt, Building
     public void disableScript()
     {
         transforms = gameObject.GetComponentsInChildren<Transform>();
-        sprite = transforms[1].GetComponent<SpriteRenderer>();
-        sprite.color = Color.red;
+        if (item_object)
+        {
+            item_object.SetActive(false);
+            item_object = null;
+        }
         Stopcorutine();
         beltsystem = GameObject.FindGameObjectWithTag("Beltsystem").GetComponent<Beltsystem>();
         beltsystem.removeConveyer(this);
         this.enabled = false;
         item = 0;
-        spareitem = 0;
         GetComponentInChildren<BoxCollider2D>().enabled = false;
         gameObject.SetActive(false);
+    }
+    public void OnPointerClick(PointerEventData pointerEventData)
+    {
+        //Output to console the clicked GameObject's name and the following message. You can replace this with your own actions for when clicking the GameObject.
+        Debug.Log(name + " Game Object Clicked!");
     }
 }

@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-public class Garden : MonoBehaviour, Building
+using UnityEngine.EventSystems;
+public class Drill : Buildcost, Building, IPointerClickHandler
 {
     public int storage = 0;
     int time = 0;
@@ -10,8 +10,10 @@ public class Garden : MonoBehaviour, Building
     Transform[] transforms;
     public GameObject nextBelt;
 
-    [SerializeField]
-    private int produceItem = 5;
+
+    public int produceItem = 5;
+    public int amountmade = 1;
+    public Sprite resource_spite=null;
 
     Building building;
     string hitm;
@@ -27,7 +29,8 @@ public class Garden : MonoBehaviour, Building
     {
         if (time >= MAX_TIME && storage < 20)
         {
-            storage++;
+            Pollution.increase(pollution);  
+            storage+=amountmade;
             time = 0;
             Debug.Log(storage);
         }
@@ -58,17 +61,18 @@ public class Garden : MonoBehaviour, Building
 
         if (building.checker(this.gameObject, produceItem))
         {
-            building.inputer(produceItem);
+            GameObject resource= Object_pooling_resource.instance.spawnfrompool("Iron", transforms[2].position, this.transform.rotation);
+            building.inputer(produceItem,resource);
             storage--;
         }
     }
     private void findNext()
     {
 
-        RaycastHit2D hit = Physics2D.Raycast(transforms[1].position, transforms[1].TransformDirection(Vector2.up), 1, 64);
+        RaycastHit2D hit = Physics2D.Raycast(transforms[2].position, transforms[2].TransformDirection(Vector2.up), 1, 64);
         if (hit.collider)
         {
-            Debug.DrawRay(transforms[1].position, transforms[1].TransformDirection(new Vector2(0, 1)), Color.red, 5);
+            Debug.DrawRay(transforms[2].position, transforms[1].TransformDirection(new Vector2(0, 1)), Color.red, 5);
             if (hit.transform.gameObject.name == "input")
             {
                 if (hitm != hit.transform.parent.gameObject.name)
@@ -116,7 +120,12 @@ public class Garden : MonoBehaviour, Building
         return false;
     }
 
-    public void inputer(int Produce)
+    public void inputer(int Produce,GameObject resource)
     {
+    }
+    public void OnPointerClick(PointerEventData pointerEventData)
+    {
+        //Output to console the clicked GameObject's name and the following message. You can replace this with your own actions for when clicking the GameObject.
+        Debug.Log(name + " Game Object Clicked!");
     }
 }
